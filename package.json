@@ -1,6 +1,6 @@
 {
   "name": "mofron-comp-slideshow",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "slideshow component for mofron",
   "main": "index.js",
   "scripts": {
@@ -11,10 +11,10 @@
     "url": "git+https://github.com/simpart/mofron-comp-slideshow.git"
   },
   "keywords": [
-    "front-end"
+    "front-end", "mofron"
   ],
   "author": "simparts",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/simpart/mofron-comp-slideshow/issues"
   },

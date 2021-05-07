@@ -1,24 +1,28 @@
 /**
  * @file   mofron-comp-slideshow/index.js
- * @author simpart
+ * @brief  slideshow component for mofron
+ * @license MIT
  */
-let mf = require('mofron');
-/**
- * @class mofron.comp.SlideShow
- * @brief slide show component for mofron
- */
-mf.comp.SlideShow = class extends mf.Component {
+
+module.exports = class extends mofron.class.Component {
     
     /**
      * initialize component
      * 
-     * @param po paramter or option
+     * @param (mixed) component config
+     * @type private
      */
-    constructor (po) {
+    constructor (p1) {
         try {
             super();
-            this.name('SlideShow');
-            this.prmOpt(po);
+            this.modname('SlideShow');
+
+            this.confmng().add("index", { type: "number", init: 0 });
+            this.confmng().add("interval", { type: "number", init: 5000 });
+            
+	    if (0 < arguments.length) {
+                this.config(p1);
+	    }
         } catch (e) {
             console.error(e.stack);
             throw e;
@@ -26,148 +30,119 @@ mf.comp.SlideShow = class extends mf.Component {
     }
     
     /**
-     * initialize dom contents
+     * initial slide visible
      * 
-     * @param prm : 
+     * @type private
      */
-    initDomConts (prm) {
+    beforeRender () {
         try {
-            super.initDomConts();
-            this.slide(this);
-        } catch (e) {
+            super.beforeRender();
+	    let chd = this.child();
+	    for (let cidx in chd) {
+	        if (this.index() != cidx) {
+                    chd[cidx].visible(false);
+		}
+	    }
+	} catch (e) {
+            console.error(e.stack);
+            throw e;
+	}
+    }
+    
+    /**
+     * start slideshow
+     * 
+     * @type function
+     */
+    start () {
+        try {
+            setTimeout(
+	        (slide) => {
+                    slide.next();
+		    slide.start();
+		},
+		this.interval(),
+		this
+            )
+	} catch (e) {
+            console.error(e.stack);
+            throw e;
+	}
+    }
+    
+    /**
+     * switch next slide
+     * 
+     * @type function
+     */
+    next () {
+        try {
+            if (this.child().length-1 <= this.index()) {
+                return;
+	    }
+            this.index(this.index()+1);
+	} catch (e) {
+            console.error(e.stack);
+	    throw e;
+	}
+    }
+    
+    /**
+     * switch prev slide
+     * 
+     * @type function
+     */
+    prev () {
+        try {
+            if (0 === this.index()) {
+                return;
+	    }
+	    this.index(this.index()-1);
+	} catch (e) {
             console.error(e.stack);
             throw e;
         }
     }
     
-    addChild (chd, idx) {
+    /**
+     * slide index setter/getter
+     * 
+     * @param (number) slide index
+     * @type parameter
+     */
+    index (prm) {
         try {
-            if (0 !== this.child().length) {
-                chd.visible(false);
-            }
-            super.addChild(chd, idx);
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    slide (sld) {
-        try {
-            let chd = sld.child();
-            let cur_sidx = (undefined === sld.slideIndex()) ? 0 : sld.slideIndex();
-            let new_sidx = (undefined === chd[cur_sidx+1]) ? 0 : cur_sidx+1;
-            let intval   = sld.interval();
-            
-            if (0 < chd.length) {
-                sld.slideIndex(new_sidx);
-                let eff = chd[cur_sidx].effect();
-                if (0 !== eff.length) {
-                    intval += eff[0].speed()*1000;
-                }
-            }
-            
-            setTimeout(sld.slide,intval, sld);
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    slideIndex (prm) {
-        try {
-            if (undefined === prm) {
-                /* getter */
-                return this.m_sldidx;
-            }
-            /* setter */
-            if (('number' !== typeof prm) || (undefined === this.child()[prm])) {
-                throw new Error('invalid parameter');
-            }
-            
-            if (undefined !== this.m_sldidx) {
-                /* disable current component */
-                
-                //this.child()[this.m_sldidx].visible(false);
-                let eff   = this.child()[this.m_sldidx].effect();
-                let en_sp = (0 === eff.length) ? 0 : eff[0].speed()*1000
-                if (0 !== eff.length) {
-                    for (let eidx in eff) {
-                        eff[eidx].execute(false);
-                    }
-                }
-                
-                let en_off = (0 === eff.length) ? 0 : eff[0].speed();
-                setTimeout(
-                    (sld, old_sidx, new_sidx) => {
-                        try {
-                            sld.child()[old_sidx].visible(false);
-                            sld.child()[new_sidx].visible(true);
-                        } catch (e) {
-                            console.error(e.stack);
-                            throw e;
-                        }
-                    },
-                    en_sp,
-                    this,
-                    this.m_sldidx,
-                    prm
-                );
-            }
-            this.m_sldidx = prm;
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    interval (prm) {
-        try {
-            if (undefined === prm) {
-                /* getter */
-                return (undefined === this.m_intv) ? 10000 : this.m_intv;
-            }
-            /* setter */
-            if ('number' !== typeof prm) {
-                throw new Error('invalid parameter');
-            }
-            this.m_intv = prm;
-        } catch (e) {
-            console.error(e.stack);
-            throw e;
-        }
-    }
-    
-    fullscreen (prm) {
-        try {
-            if (undefined === prm) {
-                /* getter */
-                return this.m_fullscn;
-            }
-            /* setter */
-            if ('boolean' !== typeof prm) {
-                throw new Error('invalid parameter');
-            }
-            this.m_fullscn = prm;
-            if (true === prm) {
-                document.body.onclick = () => {
+            if (undefined !== prm) {
+	        let slide = this;
+	        this.child()[this.index()].visible(false,() => {
                     try {
-                        if (document.body.webkitRequestFullScreen) {
-                            document.body.webkitRequestFullScreen();
-                        } else if (document.body.mozRequestFullScreen) {
-                            document.body.mozRequestFullScreen();
-                        }
-                    } catch (e) {
+                        slide.child()[prm].visible(true);
+		    } catch (e) {
                         console.error(e.stack);
                         throw e;
-                    }
-               };
-            }
+		    }
+		});
+	    }
+            return this.confmng("index",prm);
+        } catch (e) {
+            console.error(e.stack);
+            throw e;
+        }
+    }
+    
+    /**
+     * slide interval
+     * 
+     * @param (number) interval time (ms)
+     * @type parameter
+     */
+    interval (prm) {
+        try {
+	    return this.confmng("interval",prm);
         } catch (e) {
             console.error(e.stack);
             throw e;
         }
     }
 }
-module.exports = mofron.comp.SlideShow;
 /* end of file */
